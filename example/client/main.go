@@ -1,67 +1,53 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
-	"flag"
-	"io"
-	"net/http"
-	"sync"
+  "fmt"
+  "net/http"
+  "crypto/tls"
+  "strconv"
+  "time"
+  //"io/ioutil"
 
-	"github.com/lucas-clemente/quic-go/http3"
-	"github.com/lucas-clemente/quic-go/internal/testdata"
-	"github.com/lucas-clemente/quic-go/internal/utils"
+  quic "github.com/lucas-clemente/quic-go"
+  "github.com/lucas-clemente/quic-go/http3"
+  "github.com/lucas-clemente/quic-go/internal/protocol"
 )
 
 func main() {
-	verbose := flag.Bool("v", false, "verbose")
-	quiet := flag.Bool("q", false, "don't print the data")
-	flag.Parse()
-	urls := flag.Args()
+  versions := protocol.SupportedVersions
 
-	logger := utils.DefaultLogger
-
-	if *verbose {
-		logger.SetLogLevel(utils.LogLevelDebug)
-	} else {
-		logger.SetLogLevel(utils.LogLevelInfo)
-	}
-	logger.SetLogTimeFormat("")
-
-	roundTripper := &http3.RoundTripper{
-		TLSClientConfig: &tls.Config{
-			RootCAs: testdata.GetRootCA(),
-		},
-	}
-	defer roundTripper.Close()
-	hclient := &http.Client{
-		Transport: roundTripper,
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(len(urls))
-	for _, addr := range urls {
-		logger.Infof("GET %s", addr)
-		go func(addr string) {
-			rsp, err := hclient.Get(addr)
-			if err != nil {
-				panic(err)
-			}
-			logger.Infof("Got response for %s: %#v", addr, rsp)
-
-			body := &bytes.Buffer{}
-			_, err = io.Copy(body, rsp.Body)
-			if err != nil {
-				panic(err)
-			}
-			if *quiet {
-				logger.Infof("Request Body: %d bytes", body.Len())
-			} else {
-				logger.Infof("Request Body:")
-				logger.Infof("%s", body.Bytes())
-			}
-			wg.Done()
-		}(addr)
-	}
-	wg.Wait()
+  roundTripper := &http3.RoundTripper{
+    QuicConfig: &quic.Config{Versions: versions},
+    TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+  }
+  hclient := &http.Client{
+    Transport: roundTripper,
+  }
+  p := true
+  start := 0
+  stop := 1000
+  for i := start; i < stop; i++ {
+    t0 := time.Now()
+    //url := "https://stalepopcorn.club/static/files/file1.html"
+    url := "https://stalepopcorn.club/static/files/file"+strconv.Itoa(i)+".html"
+    //url := "https://stalepopcorn.club/random"
+    fmt.Println(url)
+    _, err := hclient.Get(url)
+    //body, err := ioutil.ReadAll(resp.Body)
+    //fmt.Println(len(body))
+    //resp.Body.Close()
+    if err != nil {
+      fmt.Println(err)
+      panic("failed")
+    } else {
+      t1 := time.Now()
+      elapsed := t1.Sub(t0)
+      if (p) {
+        fmt.Println(elapsed)
+      }
+      p = true
+    }
+  }
+  fmt.Println("Done!")
+  roundTripper.Close()
 }
