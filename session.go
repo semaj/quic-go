@@ -483,7 +483,10 @@ runLoop:
 		case p := <-s.receivedPackets:
 			err := s.handlePacketImpl(p)
 			if err != nil {
+                s.logger.Infof("Handle packer error.")
+
 				if qErr, ok := err.(*qerr.QuicError); ok && qErr.ErrorCode == qerr.DecryptionFailure {
+                    s.logger.Infof("Decryption failure.")
 					s.tryQueueingUndecryptablePacket(p)
 					continue
 				}
