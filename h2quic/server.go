@@ -154,7 +154,8 @@ func (s *Server) handleHeaderStream(session streamCreator) {
 func (s *Server) handleRequest(session streamCreator, headerStream quic.Stream, headerStreamMutex *sync.Mutex, hpackDecoder *hpack.Decoder, h2framer *http2.Framer) error {
 	h2frame, err := h2framer.ReadFrame()
 	if err != nil {
-		return qerr.Error(qerr.HeadersStreamDataDecompressFailure, "cannot read frame")
+		//return qerr.Error(qerr.HeadersStreamDataDecompressFailure, "cannot read frame")
+        return qerr.Error(qerr.HeadersStreamDataDecompressFailure, err.Error())
 	}
 	var h2headersFrame *http2.HeadersFrame
 	switch f := h2frame.(type) {

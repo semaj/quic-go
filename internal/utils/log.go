@@ -111,7 +111,7 @@ func (l *defaultLogger) Debug() bool {
 
 func init() {
 	DefaultLogger = &defaultLogger{}
-	DefaultLogger.SetLogLevel(readLoggingEnv())
+	DefaultLogger.SetLogLevel(LogLevelInfo)
 }
 
 func readLoggingEnv() LogLevel {
