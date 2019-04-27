@@ -76,8 +76,8 @@ func main() {
 	certFile := *certPath + "/fullchain.pem"
 	keyFile := *certPath + "/privkey.pem"
 
-    fs := http.FileServer(http.Dir("static"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
+    fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/files/"))
+    http.Handle("/files/", http.StripPrefix("/files/", fs))
 
 	if len(bs) == 0 {
 		bs = binds{"localhost:443"}
