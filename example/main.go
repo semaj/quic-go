@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"io"
+    "io"
 	"log"
 	"net/http"
 	"path"
@@ -10,12 +10,12 @@ import (
 	"strings"
     "math/rand"
 	"sync"
-    "time"
 
 	_ "net/http/pprof"
 
 	quic "github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/h2quic"
+    "github.com/lucas-clemente/quic-go/internal/utils"
 )
 
 type binds []string
@@ -45,9 +45,9 @@ func randSeq(n int) string {
 }
 
 func init() {
-	http.HandleFunc("/random", func(w http.ResponseWriter, r *http.Request) {
-        rand.Seed(time.Now().UnixNano())
-		io.WriteString(w, randSeq(2000000))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Cache-Control", "no-cache");
+        io.Copy(w, r.Body);
 	})
 }
 
@@ -67,6 +67,8 @@ func main() {
 	}()
 	// runtime.SetBlockProfileRate(1)
 
+    logger := utils.DefaultLogger
+    logger.SetLogLevel(utils.LogLevelDebug)
 	bs := binds{}
 	flag.Var(&bs, "bind", "bind to")
 	certPath := flag.String("certpath", getBuildDir(), "certificate directory")
@@ -76,8 +78,8 @@ func main() {
 	certFile := *certPath + "/fullchain.pem"
 	keyFile := *certPath + "/privkey.pem"
 
-    fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/files/"))
-    http.Handle("/files/", http.StripPrefix("/files/", fs))
+    fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/"))
+    http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	if len(bs) == 0 {
 		bs = binds{"localhost:443"}
