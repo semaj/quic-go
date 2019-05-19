@@ -115,7 +115,6 @@ func chromeTest(version protocol.VersionNumber, url string, blockUntilDone func(
 		"--user-data-dir=" + userDataDir,
 		"--enable-quic=true",
 		"--no-proxy-server=true",
-		"--no-sandbox",
 		"--origin-to-force-quic-on=quic.clemente.io:443",
 		fmt.Sprintf(`--host-resolver-rules=MAP quic.clemente.io:443 127.0.0.1:%s`, testserver.Port()),
 		fmt.Sprintf("--quic-version=QUIC_VERSION_%s", version.ToAltSvc()),
@@ -147,7 +146,7 @@ var prng = new Uint8Array(buf);
 var seed = 1;
 for (var i = 0; i < LENGTH; i++) {
 	// https://en.wikipedia.org/wiki/Lehmer_random_number_generator
-	seed = seed * 48271 % 2147483647;
+	seed = seed * 75 % 65537;
 	prng[i] = seed;
 }
 `
