@@ -2,9 +2,11 @@ package main
 
 import (
   "bytes"
-  "flag"
+  "fmt"
+  "time"
   "io"
   "net/http"
+  "math/rand"
   t "crypto/tls"
 
   quic "github.com/lucas-clemente/quic-go"
@@ -14,25 +16,15 @@ import (
 )
 
 func main() {
-  verbose := flag.Bool("v", false, "verbose")
-  tls := flag.Bool("tls", false, "activate support for IETF QUIC (work in progress)")
-  quiet := flag.Bool("q", false, "don't print the data")
-  flag.Parse()
-  urls := flag.Args()
+  urls := [1]string{"https://jameslarisch.com/"}
 
   logger := utils.DefaultLogger
 
-  if *verbose {
-    logger.SetLogLevel(utils.LogLevelDebug)
-  } else {
-    logger.SetLogLevel(utils.LogLevelInfo)
-  }
+  //logger.SetLogLevel(utils.LogLevelDebug)
+  //logger.SetLogLevel(utils.LogLevelDebug)
   logger.SetLogTimeFormat("")
 
   versions := protocol.SupportedVersions
-  if *tls {
-    versions = append([]protocol.VersionNumber{protocol.VersionTLS}, versions...)
-  }
 
   roundTripper := &h2quic.RoundTripper{
     QuicConfig: &quic.Config{Versions: versions},
@@ -43,23 +35,25 @@ func main() {
     Transport: roundTripper,
   }
 
+  payload := make([]byte, 16384)
+  latencies := make([]time.Duration, 1000)
   for i := 0; i < 1000; i++ {
-    rsp, err := hclient.Post(urls[0], "application/octet-stream", bytes.NewBuffer([]byte("HELLO")))
+    fmt.Println("I: ", i);
+    rand.Read(payload)
+    t0 := time.Now()
+    rsp, err := hclient.Post(urls[0], "application/octet-stream", bytes.NewBuffer(payload))
     if err != nil {
       panic(err)
     }
-    logger.Infof("%d Got response", i)
+    t1 := time.Now()
+    latencies[i] = t1.Sub(t0)
 
     body := &bytes.Buffer{}
     _, err = io.Copy(body, rsp.Body)
     if err != nil {
       panic(err)
     }
-    if *quiet {
-      logger.Infof("Request Body: %d bytes", body.Len())
-    } else {
-      logger.Infof("Request Body:")
-      logger.Infof("%s", body.Bytes())
-    }
+    rsp.Body.Close()
   }
+  fmt.Println(latencies)
 }
