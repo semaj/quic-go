@@ -38,7 +38,6 @@ func main() {
   payload := make([]byte, 16384)
   latencies := make([]time.Duration, 1000)
   for i := 0; i < 1000; i++ {
-    fmt.Println("I: ", i);
     rand.Read(payload)
     t0 := time.Now()
     rsp, err := hclient.Post(urls[0], "application/octet-stream", bytes.NewBuffer(payload))
@@ -56,4 +55,9 @@ func main() {
     rsp.Body.Close()
   }
   fmt.Println(latencies)
+  sum := int64(0)
+  for i := 0; i < len(latencies); i++ {
+    sum += latencies[i].Nanoseconds() / 1000000
+  }
+  fmt.Println(sum / int64(len(latencies)))
 }

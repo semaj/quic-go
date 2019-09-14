@@ -1,3 +1,5 @@
+// +build !js,!wasm
+
 package quic
 
 import (
@@ -80,9 +82,15 @@ func DialAddrContext(
 	tlsConf *tls.Config,
 	config *Config,
 ) (Session, error) {
-	udpAddr := &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 6121}
-	udpConn := newCatalystConn(udpAddr)
-	return dialContext(ctx, udpConn, udpAddr, addr, tlsConf, config, true)
+  udpAddr, err := net.ResolveUDPAddr("udp", addr)
+  if err != nil {
+    return nil, err
+  }
+  udpConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
+  if err != nil {
+    return nil, err
+  }
+  return dialContext(ctx, udpConn, udpAddr, addr, tlsConf, config, true)
 }
 
 // Dial establishes a new QUIC connection to a server using a net.PacketConn.

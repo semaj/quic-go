@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-    "io"
+    //"io"
 	"log"
 	"net/http"
 	"path"
@@ -47,7 +47,7 @@ func randSeq(n int) string {
 func init() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Cache-Control", "no-cache");
-        io.Copy(w, r.Body);
+        //io.Copy(w, r.Body);
 	})
 }
 
