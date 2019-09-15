@@ -2,20 +2,20 @@ package main
 
 import (
 	"flag"
-    //"io"
+	//"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"path"
 	"runtime"
 	"strings"
-    "math/rand"
 	"sync"
 
 	_ "net/http/pprof"
 
 	quic "github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/h2quic"
-    "github.com/lucas-clemente/quic-go/internal/utils"
+	//"github.com/lucas-clemente/quic-go/internal/utils"
 )
 
 type binds []string
@@ -37,17 +37,17 @@ type Size interface {
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func randSeq(n int) string {
-   b := make([]rune, n)
-     for i := range b {
-       b[i] = letters[rand.Intn(len(letters))]
-     }
-   return string(b)
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func init() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Cache-Control", "no-cache");
-        //io.Copy(w, r.Body);
+		w.Header().Set("Cache-Control", "no-cache")
+		//io.Copy(w, r.Body);
 	})
 }
 
@@ -67,8 +67,8 @@ func main() {
 	}()
 	// runtime.SetBlockProfileRate(1)
 
-    logger := utils.DefaultLogger
-    logger.SetLogLevel(utils.LogLevelDebug)
+	//logger := utils.DefaultLogger
+	//logger.SetLogLevel(utils.LogLevelDebug)
 	bs := binds{}
 	flag.Var(&bs, "bind", "bind to")
 	certPath := flag.String("certpath", getBuildDir(), "certificate directory")
@@ -78,8 +78,8 @@ func main() {
 	certFile := *certPath + "/fullchain.pem"
 	keyFile := *certPath + "/privkey.pem"
 
-    fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/"))
-    http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	if len(bs) == 0 {
 		bs = binds{"localhost:443"}
