@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"flag"
-	//"io"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -45,9 +46,9 @@ func randSeq(n int) string {
 }
 
 func init() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
-		//io.Copy(w, r.Body);
+		io.Copy(w, bytes.NewBuffer([]byte("ACK")))
 	})
 }
 
@@ -71,15 +72,14 @@ func main() {
 	//logger.SetLogLevel(utils.LogLevelDebug)
 	bs := binds{}
 	flag.Var(&bs, "bind", "bind to")
-	certPath := flag.String("certpath", getBuildDir(), "certificate directory")
 	tcp := flag.Bool("tcp", false, "also listen on TCP")
 	flag.Parse()
 
-	certFile := *certPath + "/fullchain.pem"
-	keyFile := *certPath + "/privkey.pem"
+	certFile := "assets/certs/fullchain.pem"
+	keyFile := "assets/certs/privkey.pem"
 
-	fs := http.FileServer(http.Dir("/home/james/catalyst-benchmarks/assets/"))
-	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	fs := http.FileServer(http.Dir("src/http/"))
+	http.Handle("/http/", http.StripPrefix("/http/", fs))
 
 	if len(bs) == 0 {
 		bs = binds{"localhost:443"}

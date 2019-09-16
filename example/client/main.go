@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"syscall/js"
 	"time"
 
 	quic "github.com/lucas-clemente/quic-go"
@@ -16,7 +17,6 @@ import (
 )
 
 func main() {
-	urls := [1]string{"https://jameslarisch.com/"}
 
 	//logger := utils.DefaultLogger
 
@@ -25,6 +25,8 @@ func main() {
 	//logger.SetLogTimeFormat("")
 
 	//versions := protocol.SupportedVersions
+	payloadSizeMb := js.Global().Get("payloadSizeMb").Int()
+	numPingPongs := js.Global().Get("numPingPongs").Int()
 
 	roundTripper := &h2quic.RoundTripper{
 		QuicConfig:      &quic.Config{},
@@ -35,17 +37,20 @@ func main() {
 		Transport: roundTripper,
 	}
 
-	payload := make([]byte, 16384)
-	latencies := make([]time.Duration, 1000)
-	for i := 0; i < 1000; i++ {
+	url := "https://jameslarisch.com/latency"
+	payloadSizeBytes := payloadSizeMb * 1000000
+	for i := 0; i < numPingPongs; i++ {
+		payload := make([]byte, payloadSizeBytes/numPingPongs)
 		rand.Read(payload)
 		t0 := time.Now()
-		rsp, err := hclient.Post(urls[0], "application/octet-stream", bytes.NewBuffer(payload))
+		rsp, err := hclient.Post(url, "application/octet-stream", bytes.NewBuffer(payload))
 		if err != nil {
 			panic(err)
 		}
 		t1 := time.Now()
-		latencies[i] = t1.Sub(t0)
+		fmt.Print("LATENCY TIME", i)
+		fmt.Print(":", t1.Sub(t0).Seconds())
+		fmt.Println(" DONE")
 
 		body := &bytes.Buffer{}
 		_, err = io.Copy(body, rsp.Body)
@@ -54,10 +59,4 @@ func main() {
 		}
 		rsp.Body.Close()
 	}
-	fmt.Println(latencies)
-	sum := int64(0)
-	for i := 0; i < len(latencies); i++ {
-		sum += latencies[i].Nanoseconds() / 1000000
-	}
-	fmt.Println(sum / int64(len(latencies)))
 }
