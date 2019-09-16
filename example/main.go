@@ -70,9 +70,9 @@ func getBuildDir() string {
 }
 
 func main() {
-	port := os.Args[2]
+	port := os.Args[1]
 	if port == "443" {
-		Count, _ = strconv.Atoi(os.Args[3])
+		Count, _ = strconv.Atoi(os.Args[2])
 	}
 	// defer profile.Start().Stop()
 	go func() {
@@ -94,7 +94,7 @@ func main() {
 	http.Handle("/http/", http.StripPrefix("/http/", fs))
 
 	if len(bs) == 0 {
-		bs = binds{"0.0.0.0" + port}
+      bs = binds{"0.0.0.0:" + port}
 	}
 
 	var wg sync.WaitGroup
