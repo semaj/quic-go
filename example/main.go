@@ -7,8 +7,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -20,6 +22,8 @@ import (
 )
 
 type binds []string
+
+var Count int = 1000000000
 
 func (b binds) String() string {
 	return strings.Join(b, ",")
@@ -49,6 +53,10 @@ func init() {
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		io.Copy(w, bytes.NewBuffer([]byte("ACK")))
+		Count--
+		if Count == 0 {
+			os.Exit(0)
+		}
 	})
 }
 
@@ -62,6 +70,10 @@ func getBuildDir() string {
 }
 
 func main() {
+	port := os.Args[2]
+	if port == "443" {
+		Count, _ = strconv.Atoi(os.Args[3])
+	}
 	// defer profile.Start().Stop()
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -82,7 +94,7 @@ func main() {
 	http.Handle("/http/", http.StripPrefix("/http/", fs))
 
 	if len(bs) == 0 {
-		bs = binds{"localhost:443"}
+		bs = binds{"0.0.0.0" + port}
 	}
 
 	var wg sync.WaitGroup
