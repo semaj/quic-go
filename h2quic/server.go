@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+    "crypto/x509"
 	"runtime"
 	"strings"
 	"sync"
@@ -77,6 +78,11 @@ func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	// so we don't need to make a full copy.
 	config := &tls.Config{
 		Certificates: certs,
+        InsecureSkipVerify: true,
+        VerifyPeerCertificate: func(a [][]byte, b [][]*x509.Certificate) error {
+          fmt.Println("Am I ever called?")
+          return nil
+        },
 	}
 	return s.serveImpl(config, nil)
 }

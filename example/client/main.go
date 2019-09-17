@@ -25,7 +25,7 @@ func main() {
 	//logger.SetLogTimeFormat("")
 
 	//versions := protocol.SupportedVersions
-	payloadSizeMb := js.Global().Get("payloadSizeMb").Int()
+	payloadSizeMb := js.Global().Get("payloadSizeMb").Float()
 	numPingPongs := js.Global().Get("numPingPongs").Int()
 
 	roundTripper := &h2quic.RoundTripper{
@@ -38,18 +38,20 @@ func main() {
 	}
 
 	url := "https://jameslarisch.com/latency"
-	payloadSizeBytes := payloadSizeMb * 1000000
+	payloadSizeBytes := payloadSizeMb * 1000000.0
 	for i := 0; i < numPingPongs; i++ {
-		payload := make([]byte, payloadSizeBytes/numPingPongs)
+		payload := make([]byte, int64(payloadSizeBytes/float64(numPingPongs)))
 		rand.Read(payload)
 		t0 := time.Now()
+        fmt.Println("ABOUT TO POST")
 		rsp, err := hclient.Post(url, "application/octet-stream", bytes.NewBuffer(payload))
 		if err != nil {
 			panic(err)
 		}
+        fmt.Println("JUST POSTED")
 		t1 := time.Now()
-		fmt.Print("LATENCY TIME", i)
-		fmt.Print(":", t1.Sub(t0).Seconds())
+		fmt.Print("LATENCY TIME ", i)
+		fmt.Print(": ", t1.Sub(t0).Seconds())
 		fmt.Println(" DONE")
 
 		body := &bytes.Buffer{}

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -13,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+    //"time"
+    "fmt"
 
 	_ "net/http/pprof"
 
@@ -52,12 +52,15 @@ func randSeq(n int) string {
 func init() {
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
-		io.Copy(w, bytes.NewBuffer([]byte("ACK")))
-		Count--
-        log.Println("COUNT", Count)
-		if Count == 0 {
-			os.Exit(0)
-		}
+        fmt.Fprint(w, "ACK")
+        go func() {
+          Count--
+          log.Println("COUNT", Count)
+          if Count == 0 {
+            //time.Sleep(10 * time.Second)
+            os.Exit(0)
+          }
+        }()
 	})
 }
 

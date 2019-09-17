@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/tls"
+    "runtime/debug"
 	"errors"
 	"fmt"
 	"net"
@@ -854,6 +855,7 @@ func (s *session) destroy(e error) {
 }
 
 func (s *session) closeRemote(e error) {
+  debug.PrintStack()
 	s.closeOnce.Do(func() {
 		s.closeChan <- closeError{err: e, remote: true}
 	})
