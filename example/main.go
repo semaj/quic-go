@@ -54,6 +54,7 @@ func init() {
 		w.Header().Set("Cache-Control", "no-cache")
 		io.Copy(w, bytes.NewBuffer([]byte("ACK")))
 		Count--
+        log.Println("COUNT", Count)
 		if Count == 0 {
 			os.Exit(0)
 		}
@@ -71,9 +72,7 @@ func getBuildDir() string {
 
 func main() {
 	port := os.Args[1]
-	if port == "443" {
-		Count, _ = strconv.Atoi(os.Args[2])
-	}
+    Count, _ = strconv.Atoi(os.Args[2])
 	// defer profile.Start().Stop()
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -87,8 +86,8 @@ func main() {
 	tcp := flag.Bool("tcp", false, "also listen on TCP")
 	flag.Parse()
 
-	certFile := "assets/certs/fullchain.pem"
-	keyFile := "assets/certs/privkey.pem"
+	certFile := "assets/certs/jameslarisch.com.pem"
+	keyFile := "assets/certs/jameslarisch.com-key.pem"
 
 	fs := http.FileServer(http.Dir("src/http/"))
 	http.Handle("/http/", http.StripPrefix("/http/", fs))
@@ -107,7 +106,9 @@ func main() {
 				err = h2quic.ListenAndServe(bCap, certFile, keyFile, nil)
 			} else {
 				server := h2quic.Server{
-					Server:     &http.Server{Addr: bCap},
+					Server:     &http.Server{
+                      Addr: bCap,
+                    },
 					QuicConfig: &quic.Config{},
 				}
 				err = server.ListenAndServeTLS(certFile, keyFile)
