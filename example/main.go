@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-    //"time"
+    "time"
     "fmt"
 
 	_ "net/http/pprof"
@@ -57,7 +57,7 @@ func init() {
           Count--
           log.Println("COUNT", Count)
           if Count == 0 {
-            //time.Sleep(10 * time.Second)
+            time.Sleep(10 * time.Second)
             os.Exit(0)
           }
         }()
