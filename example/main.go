@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+    "io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -51,6 +52,10 @@ func randSeq(n int) string {
 
 func init() {
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
+        _, err := io.Copy(os.Stdout, r.Body)
+        if err != nil {
+          panic(err)
+        }
 		w.Header().Set("Cache-Control", "no-cache")
         fmt.Fprint(w, "ACK")
         go func() {
