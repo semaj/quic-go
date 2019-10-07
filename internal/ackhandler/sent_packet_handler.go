@@ -293,9 +293,9 @@ func (h *sentPacketHandler) determineNewlyAckedPackets(ackFrame *wire.AckFrame) 
 func (h *sentPacketHandler) maybeUpdateRTT(largestAcked protocol.PacketNumber, ackDelay time.Duration, rcvTime time.Time) bool {
 	if p := h.packetHistory.GetPacket(largestAcked); p != nil {
 		h.rttStats.UpdateRTT(rcvTime.Sub(p.SendTime), ackDelay, rcvTime)
-		if h.logger.Debug() {
-			h.logger.Debugf("\tupdated RTT: %s (σ: %s)", h.rttStats.SmoothedRTT(), h.rttStats.MeanDeviation())
-		}
+		//if h.logger.Debug() {
+		//fmt.Printf("\tCongestion updated RTT: %s (σ: %s)\n", h.rttStats.SmoothedRTT(), h.rttStats.MeanDeviation())
+		//}
 		return true
 	}
 	return false
@@ -341,20 +341,20 @@ func (h *sentPacketHandler) detectLostPackets(now time.Time, priorInFlight proto
 		if timeSinceSent > delayUntilLost {
 			lostPackets = append(lostPackets, packet)
 		} else if h.lossTime.IsZero() {
-			if h.logger.Debug() {
-				h.logger.Debugf("\tsetting loss timer for packet %#x to %s (in %s)", packet.PacketNumber, delayUntilLost, delayUntilLost-timeSinceSent)
-			}
+			//if h.logger.Debug() {
+			//fmt.Printf("\tCongestion setting loss timer for packet %#x to %s (in %s)\n", packet.PacketNumber, delayUntilLost, delayUntilLost-timeSinceSent)
+			//}
 			// Note: This conditional is only entered once per call
 			h.lossTime = now.Add(delayUntilLost - timeSinceSent)
 		}
 		return true, nil
 	})
-	if h.logger.Debug() && len(lostPackets) > 0 {
+	if len(lostPackets) > 0 {
 		pns := make([]protocol.PacketNumber, len(lostPackets))
 		for i, p := range lostPackets {
 			pns[i] = p.PacketNumber
 		}
-		h.logger.Debugf("\tlost packets (%d): %#x", len(pns), pns)
+		//fmt.Printf("\tCongestion lost packets (%d)\n", len(pns))
 	}
 
 	for _, p := range lostPackets {
@@ -538,9 +538,9 @@ func (h *sentPacketHandler) SendMode() SendMode {
 	// we will stop sending out new data when reaching MaxOutstandingSentPackets,
 	// but still allow sending of retransmissions and ACKs.
 	if numTrackedPackets >= protocol.MaxTrackedSentPackets {
-		if h.logger.Debug() {
-			h.logger.Debugf("Limited by the number of tracked packets: tracking %d packets, maximum %d", numTrackedPackets, protocol.MaxTrackedSentPackets)
-		}
+		//if h.logger.Debug() {
+		fmt.Printf("Congestion Limited by the number of tracked packets: tracking %d packets, maximum %d\n", numTrackedPackets, protocol.MaxTrackedSentPackets)
+		//}
 		return SendNone
 	}
 	if h.allowTLP {
@@ -551,9 +551,9 @@ func (h *sentPacketHandler) SendMode() SendMode {
 	}
 	// Only send ACKs if we're congestion limited.
 	if cwnd := h.congestion.GetCongestionWindow(); h.bytesInFlight > cwnd {
-		if h.logger.Debug() {
-			h.logger.Debugf("Congestion limited: bytes in flight %d, window %d", h.bytesInFlight, cwnd)
-		}
+		//if h.logger.Debug() {
+		fmt.Printf("Congestion limited: bytes in flight %d, window %d\n", h.bytesInFlight, cwnd)
+		//}
 		return SendAck
 	}
 	// Send retransmissions first, if there are any.
@@ -561,9 +561,9 @@ func (h *sentPacketHandler) SendMode() SendMode {
 		return SendRetransmission
 	}
 	if numTrackedPackets >= protocol.MaxOutstandingSentPackets {
-		if h.logger.Debug() {
-			h.logger.Debugf("Max outstanding limited: tracking %d packets, maximum: %d", numTrackedPackets, protocol.MaxOutstandingSentPackets)
-		}
+		//if h.logger.Debug() {
+		fmt.Printf("Congestion Max outstanding limited: tracking %d packets, maximum: %d\n", numTrackedPackets, protocol.MaxOutstandingSentPackets)
+		//}
 		return SendAck
 	}
 	return SendAny

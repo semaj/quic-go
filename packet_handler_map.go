@@ -45,6 +45,17 @@ func newPacketHandlerMap(conn net.PacketConn, connIDLen int, logger utils.Logger
 	return m
 }
 
+func newPacketHandlerMap2(conn net.PacketConn, connIDLen int, logger utils.Logger) packetHandlerManager {
+	m := &packetHandlerMap{
+		conn:                      conn,
+		connIDLen:                 connIDLen,
+		handlers:                  make(map[string]packetHandler),
+		deleteClosedSessionsAfter: protocol.ClosedSessionDeleteTimeout,
+		logger:                    logger,
+	}
+	return m
+}
+
 func (h *packetHandlerMap) Add(id protocol.ConnectionID, handler packetHandler) {
 	h.mutex.Lock()
 	h.handlers[string(id)] = handler

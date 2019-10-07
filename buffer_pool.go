@@ -3,6 +3,7 @@ package quic
 import (
 	"sync"
 
+	"fmt"
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 )
 
@@ -14,6 +15,7 @@ func getPacketBuffer() *[]byte {
 
 func putPacketBuffer(buf *[]byte) {
 	if cap(*buf) != int(protocol.MaxReceivePacketSize) {
+		fmt.Println("CAP: ", cap(*buf))
 		panic("putPacketBuffer called with packet of wrong size!")
 	}
 	bufferPool.Put(buf)

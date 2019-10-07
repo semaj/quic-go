@@ -7,7 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"syscall/js"
+	//"syscall/js"
 	"time"
 
 	quic "github.com/lucas-clemente/quic-go"
@@ -17,16 +17,6 @@ import (
 )
 
 func main() {
-
-	//logger := utils.DefaultLogger
-
-	//logger.SetLogLevel(utils.LogLevelDebug)
-	//logger.SetLogLevel(utils.LogLevelDebug)
-	//logger.SetLogTimeFormat("")
-
-	//versions := protocol.SupportedVersions
-	payloadSizeMb := js.Global().Get("payloadSizeMb").Float()
-	numPingPongs := js.Global().Get("numPingPongs").Int()
 
 	roundTripper := &h2quic.RoundTripper{
 		QuicConfig:      &quic.Config{},
@@ -38,18 +28,21 @@ func main() {
 	}
 
 	url := "https://jameslarisch.com/latency"
-	payloadSizeBytes := payloadSizeMb * 1000000.0
-	for i := 0; i < numPingPongs; i++ {
-		payload := make([]byte, int64(payloadSizeBytes/float64(numPingPongs)))
+	payloadSizeBytes := PayloadSizeMb * 1000000.0
+	for i := 0; i < NumPingPongs; i++ {
+		payload := make([]byte, int64(payloadSizeBytes/float64(NumPingPongs)))
 		rand.Read(payload)
+		buf := bytes.NewBuffer(payload)
+		fmt.Println("ABOUT TO POST")
+		//js.Global().Get("window").Get("console").Call("profile", "profile1")
 		t0 := time.Now()
-        fmt.Println("ABOUT TO POST")
-		rsp, err := hclient.Post(url, "application/octet-stream", bytes.NewBuffer(payload))
+		rsp, err := hclient.Post(url, "application/octet-stream", buf)
 		if err != nil {
 			panic(err)
 		}
-        fmt.Println("JUST POSTED")
 		t1 := time.Now()
+		//js.Global().Get("window").Get("console").Call("profileEnd")
+		fmt.Println("JUST POSTED")
 		fmt.Print("LATENCY TIME ", i)
 		fmt.Print(": ", t1.Sub(t0).Seconds())
 		fmt.Println(" DONE")

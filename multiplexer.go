@@ -35,12 +35,20 @@ type connMultiplexer struct {
 
 var _ multiplexer = &connMultiplexer{}
 
-func getMultiplexer() multiplexer {
+func getMultiplexer(params ...int) multiplexer {
 	connMuxerOnce.Do(func() {
-		connMuxer = &connMultiplexer{
-			conns:                   make(map[net.PacketConn]connManager),
-			logger:                  utils.DefaultLogger.WithPrefix("muxer"),
-			newPacketHandlerManager: newPacketHandlerMap,
+		if len(params) == 0 {
+			connMuxer = &connMultiplexer{
+				conns:                   make(map[net.PacketConn]connManager),
+				logger:                  utils.DefaultLogger.WithPrefix("muxer"),
+				newPacketHandlerManager: newPacketHandlerMap,
+			}
+		} else {
+			connMuxer = &connMultiplexer{
+				conns:                   make(map[net.PacketConn]connManager),
+				logger:                  utils.DefaultLogger.WithPrefix("muxer"),
+				newPacketHandlerManager: newPacketHandlerMap2,
+			}
 		}
 	})
 	return connMuxer

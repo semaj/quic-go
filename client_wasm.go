@@ -129,7 +129,7 @@ func dialContext(
 			}
 		}
 	}
-	packetHandlers, err := getMultiplexer().AddConn(pconn, config.ConnectionIDLength)
+	packetHandlers, err := getMultiplexer(0).AddConn(pconn, config.ConnectionIDLength)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +138,13 @@ func dialContext(
 		return nil, err
 	}
 	c.packetHandlers = packetHandlers
+	catalystConn, ok := pconn.(*CatalystConn)
+	phm, ok2 := packetHandlers.(*packetHandlerMap)
+	if ok && ok2 {
+		catalystConn.SetPHM(phm)
+	} else {
+		panic("AHH")
+	}
 	if err := c.dial(ctx); err != nil {
 		return nil, err
 	}

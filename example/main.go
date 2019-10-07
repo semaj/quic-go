@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io"
 	"log"
-    "io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -12,8 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-    "time"
-    "fmt"
+	"time"
 
 	_ "net/http/pprof"
 
@@ -52,20 +52,20 @@ func randSeq(n int) string {
 
 func init() {
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
-        _, err := io.Copy(os.Stdout, r.Body)
-        if err != nil {
-          panic(err)
-        }
+		_, err := io.Copy(os.Stdout, r.Body)
+		if err != nil {
+			panic(err)
+		}
 		w.Header().Set("Cache-Control", "no-cache")
-        fmt.Fprint(w, "ACK")
-        go func() {
-          Count--
-          log.Println("COUNT", Count)
-          if Count == 0 {
-            time.Sleep(10 * time.Second)
-            os.Exit(0)
-          }
-        }()
+		fmt.Fprint(w, "ACK")
+		go func() {
+			Count--
+			log.Println("COUNT", Count)
+			if Count == 0 {
+				time.Sleep(1 * time.Second)
+				os.Exit(0)
+			}
+		}()
 	})
 }
 
@@ -80,7 +80,7 @@ func getBuildDir() string {
 
 func main() {
 	port := os.Args[1]
-    Count, _ = strconv.Atoi(os.Args[2])
+	Count, _ = strconv.Atoi(os.Args[2])
 	// defer profile.Start().Stop()
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -101,7 +101,7 @@ func main() {
 	http.Handle("/http/", http.StripPrefix("/http/", fs))
 
 	if len(bs) == 0 {
-      bs = binds{"0.0.0.0:" + port}
+		bs = binds{"0.0.0.0:" + port}
 	}
 
 	var wg sync.WaitGroup
@@ -114,9 +114,9 @@ func main() {
 				err = h2quic.ListenAndServe(bCap, certFile, keyFile, nil)
 			} else {
 				server := h2quic.Server{
-					Server:     &http.Server{
-                      Addr: bCap,
-                    },
+					Server: &http.Server{
+						Addr: bCap,
+					},
 					QuicConfig: &quic.Config{},
 				}
 				err = server.ListenAndServeTLS(certFile, keyFile)
