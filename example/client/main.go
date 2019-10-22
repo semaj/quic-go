@@ -27,6 +27,11 @@ func main() {
 		Transport: roundTripper,
 	}
 
+	//go func() {
+	//for {
+	//time.Sleep(1000 * time.Millisecond)
+	//}
+	//}()
 	url := "https://jameslarisch.com/latency"
 	payloadSizeBytes := PayloadSizeMb * 1000000.0
 	for i := 0; i < NumPingPongs; i++ {

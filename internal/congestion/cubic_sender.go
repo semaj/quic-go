@@ -1,10 +1,10 @@
 package congestion
 
 import (
-	"time"
-
+	"fmt"
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
+	"time"
 )
 
 const (
@@ -165,6 +165,7 @@ func (c *cubicSender) OnPacketLost(
 ) {
 	// TCP NewReno (RFC6582) says that once a loss occurs, any losses in packets
 	// already sent should be treated as a single loss event, since it's expected.
+	fmt.Println("QUIC LOSS")
 	if packetNumber <= c.largestSentAtLastCutback {
 		if c.lastCutbackExitedSlowstart {
 			c.stats.slowstartPacketsLost++
@@ -177,6 +178,7 @@ func (c *cubicSender) OnPacketLost(
 		}
 		return
 	}
+	fmt.Println("QUIC NEW LOSS")
 	c.lastCutbackExitedSlowstart = c.InSlowStart()
 	if c.InSlowStart() {
 		c.stats.slowstartPacketsLost++

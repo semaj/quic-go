@@ -1,9 +1,9 @@
 package congestion
 
 import (
-	"time"
-
+	"fmt"
 	"github.com/lucas-clemente/quic-go/internal/utils"
+	"time"
 )
 
 const (
@@ -38,7 +38,11 @@ func (r *RTTStats) LatestRTT() time.Duration { return r.latestRTT }
 
 // SmoothedRTT returns the EWMA smoothed RTT for the connection.
 // May return Zero if no valid updates have occurred.
-func (r *RTTStats) SmoothedRTT() time.Duration { return r.smoothedRTT }
+func (r *RTTStats) SmoothedRTT() time.Duration {
+	//fmt.Println("QUIC SMOOTHED RTT:", r.smoothedRTT)
+	fmt.Print("")
+	return r.smoothedRTT
+}
 
 // SmoothedOrInitialRTT returns the EWMA smoothed RTT for the connection.
 // If no valid updates have occurred, it returns the initial RTT.

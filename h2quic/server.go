@@ -2,11 +2,11 @@ package h2quic
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-    "crypto/x509"
 	"runtime"
 	"strings"
 	"sync"
@@ -77,12 +77,12 @@ func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	// We currently only use the cert-related stuff from tls.Config,
 	// so we don't need to make a full copy.
 	config := &tls.Config{
-		Certificates: certs,
-        InsecureSkipVerify: true,
-        VerifyPeerCertificate: func(a [][]byte, b [][]*x509.Certificate) error {
-          fmt.Println("Am I ever called?")
-          return nil
-        },
+		Certificates:       certs,
+		InsecureSkipVerify: true,
+		VerifyPeerCertificate: func(a [][]byte, b [][]*x509.Certificate) error {
+			fmt.Println("Am I ever called?")
+			return nil
+		},
 	}
 	return s.serveImpl(config, nil)
 }
@@ -161,7 +161,7 @@ func (s *Server) handleRequest(session streamCreator, headerStream quic.Stream, 
 	h2frame, err := h2framer.ReadFrame()
 	if err != nil {
 		//return qerr.Error(qerr.HeadersStreamDataDecompressFailure, "cannot read frame")
-        return qerr.Error(qerr.HeadersStreamDataDecompressFailure, err.Error())
+		return qerr.Error(qerr.HeadersStreamDataDecompressFailure, err.Error())
 	}
 	var h2headersFrame *http2.HeadersFrame
 	switch f := h2frame.(type) {
@@ -254,7 +254,7 @@ func (s *Server) handleRequest(session streamCreator, headerStream quic.Stream, 
 			responseWriter.dataStream.Close()
 		}
 		if s.CloseAfterFirstRequest {
-			time.Sleep(100 * time.Millisecond)
+			//time.Sleep(100 * time.Millisecond)
 			session.Close()
 		}
 	}()

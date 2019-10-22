@@ -1,8 +1,10 @@
 package quic
 
 import (
+	"fmt"
 	"net"
 	"sync"
+	"time"
 )
 
 type connection interface {
@@ -23,12 +25,17 @@ type conn struct {
 
 var _ connection = &conn{}
 
+var LastReceive = time.Now()
+
 func (c *conn) Write(p []byte) error {
 	_, err := c.pconn.WriteTo(p, c.currentAddr)
 	return err
 }
 
 func (c *conn) Read(p []byte) (int, net.Addr, error) {
+	now := time.Now()
+	fmt.Println("TSLR: ", now.Sub(LastReceive))
+	LastReceive = now
 	return c.pconn.ReadFrom(p)
 }
 
