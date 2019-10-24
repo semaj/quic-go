@@ -74,15 +74,29 @@ func newCatalystConn(addr net.Addr) *CatalystConn {
 		domUDPProxy: domUDPProxy,
 		addr:        addr,
 	}
+
+	//go func() {
+	//for {
+	//data := <-packetChan
+	//conn.phm.handlePacket(conn.addr, data)
+	//}
+	//}()
+	counter := 0
+	t := time.Now()
 	enqueue := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		fmt.Println("CATALYSTSOCKETRECEIVE")
+		//t0 := time.Now()
+		counter++
+		fmt.Println("CATALYSTRECEIVE ", counter)
 		int8arrayWrapper := js.Global().Get("Uint8Array").New(args[0].Get("data"))
 		data := *getPacketBuffer()
 		data = data[:protocol.MaxReceivePacketSize]
 		js.CopyBytesToGo(data, int8arrayWrapper)
 		data = data[:int8arrayWrapper.Get("byteLength").Int()]
-		//conn.phm.handlePacket(conn.addr, data)
-		packetChan <- data
+		conn.phm.handlePacket(conn.addr, data)
+		//packetChan <- data
+		//fmt.Println("RECEIVE ELAPSED", time.Now().Sub(t))
+		t = time.Now()
+
 		return nil
 	})
 	var onclose js.Func
