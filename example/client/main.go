@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	//"syscall/js"
+	//"os"
 	"time"
 
 	quic "github.com/lucas-clemente/quic-go"
@@ -18,6 +19,10 @@ import (
 
 func main() {
 
+	//f, err := os.Create("tmp/pprof")
+	//if err != nil {
+	//panic(err)
+	//}
 	roundTripper := &h2quic.RoundTripper{
 		QuicConfig:      &quic.Config{},
 		TLSClientConfig: &t.Config{InsecureSkipVerify: true},
@@ -51,6 +56,8 @@ func main() {
 		fmt.Print("LATENCY TIME ", i)
 		fmt.Print(": ", t1.Sub(t0).Seconds())
 		fmt.Println(" DONE")
+		for {
+		}
 
 		body := &bytes.Buffer{}
 		_, err = io.Copy(body, rsp.Body)
