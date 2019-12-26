@@ -30,10 +30,12 @@ func (c *CatalystConn) WriteTo(p []byte, _ net.Addr) (int, error) {
 }
 
 func (c *CatalystConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
+	//time.Sleep(1 * time.Millisecond)
+	//s0 := time.Now()
 	recvd := <-c.packetChan
+	//fmt.Println("Elapsed ", time.Now().Sub(s0))
 	copied := copy(p, recvd)
 	now := time.Now()
-	fmt.Println("TSLR: ", now.Sub(LastReceive))
 	LastReceive = now
 	return copied, c.addr, nil
 }
@@ -86,14 +88,16 @@ func newCatalystConn(addr net.Addr) *CatalystConn {
 	enqueue := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		//t0 := time.Now()
 		counter++
-		fmt.Println("CATALYSTRECEIVE ", counter)
+		CatLog("RECEIVEDCOUNTER", counter)
 		int8arrayWrapper := js.Global().Get("Uint8Array").New(args[0].Get("data"))
 		data := *getPacketBuffer()
 		data = data[:protocol.MaxReceivePacketSize]
 		js.CopyBytesToGo(data, int8arrayWrapper)
-		data = data[:int8arrayWrapper.Get("byteLength").Int()]
-		conn.phm.handlePacket(conn.addr, data)
-		//packetChan <- data
+		byteLength := int8arrayWrapper.Get("byteLength").Int()
+		CatLog("ByteLength", byteLength)
+		data = data[:byteLength]
+		//conn.phm.handlePacket(conn.addr, data)
+		packetChan <- data
 		//fmt.Println("RECEIVE ELAPSED", time.Now().Sub(t))
 		t = time.Now()
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/tls"
-    "runtime/debug"
 	"errors"
 	"fmt"
 	"net"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -484,10 +484,10 @@ runLoop:
 		case p := <-s.receivedPackets:
 			err := s.handlePacketImpl(p)
 			if err != nil {
-                s.logger.Infof("Handle packer error.")
+				s.logger.Infof("Handle packer error.")
 
 				if qErr, ok := err.(*qerr.QuicError); ok && qErr.ErrorCode == qerr.DecryptionFailure {
-                    s.logger.Infof("Decryption failure.")
+					s.logger.Infof("Decryption failure.")
 					s.tryQueueingUndecryptablePacket(p)
 					continue
 				}
@@ -855,7 +855,7 @@ func (s *session) destroy(e error) {
 }
 
 func (s *session) closeRemote(e error) {
-  debug.PrintStack()
+	debug.PrintStack()
 	s.closeOnce.Do(func() {
 		s.closeChan <- closeError{err: e, remote: true}
 	})
@@ -920,6 +920,8 @@ func (s *session) processTransportParameters(params *handshake.TransportParamete
 	// so we don't need to update stream flow control windows
 }
 
+var timeoutCounter = 0
+
 func (s *session) sendPackets() error {
 	s.pacingDeadline = time.Time{}
 
@@ -929,6 +931,9 @@ func (s *session) sendPackets() error {
 	}
 
 	numPackets := s.sentPacketHandler.ShouldSendNumPackets()
+	//if numPackets == 1 {
+	//numPackets = 3
+	//}
 	var numPacketsSent int
 sendLoop:
 	for {
@@ -980,8 +985,14 @@ sendLoop:
 	}
 	// Only start the pacing timer if we sent as many packets as we were allowed.
 	// There will probably be more to send when calling sendPacket again.
+	//fmt.Println("Numpacketssent:", numPacketsSent)
 	if numPacketsSent == numPackets {
 		s.pacingDeadline = s.sentPacketHandler.TimeUntilSend()
+		//fmt.Println("Pacing:", s.pacingDeadline.Sub(time.Now()))
+	}
+	timeoutCounter++
+	if timeoutCounter%10 == 0 {
+		//time.Sleep(1 * time.Millisecond)
 	}
 	return nil
 }

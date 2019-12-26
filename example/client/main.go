@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"runtime"
 	//"syscall/js"
 	//"os"
 	"time"
@@ -18,7 +19,7 @@ import (
 )
 
 func main() {
-
+	runtime.GOMAXPROCS(1)
 	//f, err := os.Create("tmp/pprof")
 	//if err != nil {
 	//panic(err)
@@ -38,9 +39,9 @@ func main() {
 	//}
 	//}()
 	url := "https://jameslarisch.com/latency"
-	payloadSizeBytes := PayloadSizeMb * 1000000.0
-	for i := 0; i < NumPingPongs; i++ {
-		payload := make([]byte, int64(payloadSizeBytes/float64(NumPingPongs)))
+	payloadSizeBytes := 20 * 1000000.0
+	for i := 0; i < 1; i++ {
+		payload := make([]byte, int64(payloadSizeBytes/float64(1)))
 		rand.Read(payload)
 		buf := bytes.NewBuffer(payload)
 		fmt.Println("ABOUT TO POST")
@@ -56,8 +57,7 @@ func main() {
 		fmt.Print("LATENCY TIME ", i)
 		fmt.Print(": ", t1.Sub(t0).Seconds())
 		fmt.Println(" DONE")
-		for {
-		}
+		select {}
 
 		body := &bytes.Buffer{}
 		_, err = io.Copy(body, rsp.Body)

@@ -1,7 +1,7 @@
 package congestion
 
 import (
-	"fmt"
+	_ "fmt"
 	"github.com/lucas-clemente/quic-go/internal/utils"
 	"time"
 )
@@ -36,11 +36,11 @@ func (r *RTTStats) MinRTT() time.Duration { return r.minRTT }
 // May return Zero if no valid updates have occurred.
 func (r *RTTStats) LatestRTT() time.Duration { return r.latestRTT }
 
+var SmoothedRTTs = make([]time.Duration, 0)
+
 // SmoothedRTT returns the EWMA smoothed RTT for the connection.
 // May return Zero if no valid updates have occurred.
 func (r *RTTStats) SmoothedRTT() time.Duration {
-	//fmt.Println("QUIC SMOOTHED RTT:", r.smoothedRTT)
-	fmt.Print("")
 	return r.smoothedRTT
 }
 
@@ -57,7 +57,10 @@ func (r *RTTStats) SmoothedOrInitialRTT() time.Duration {
 func (r *RTTStats) MeanDeviation() time.Duration { return r.meanDeviation }
 
 // UpdateRTT updates the RTT based on a new sample.
-func (r *RTTStats) UpdateRTT(sendDelta, ackDelay time.Duration, now time.Time) {
+func (r *RTTStats) UpdateRTT(sendDelta time.Duration, ackDelay time.Duration, now time.Time) {
+	//if sendDelta > 80*time.Millisecond {
+	//sendDelta = 56 * time.Millisecond
+	//}
 	if sendDelta == utils.InfDuration || sendDelta <= 0 {
 		return
 	}

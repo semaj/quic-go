@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -52,7 +53,7 @@ func randSeq(n int) string {
 
 func init() {
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
-		_, err := io.Copy(os.Stdout, r.Body)
+		_, err := io.Copy(ioutil.Discard, r.Body)
 		if err != nil {
 			panic(err)
 		}

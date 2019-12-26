@@ -12,6 +12,10 @@ import (
 	"github.com/lucas-clemente/quic-go/internal/wire"
 )
 
+func CatLog(str string, args ...interface{}) {
+	//fmt.Println(str, args...)
+}
+
 // The packetHandlerMap stores packetHandlers, identified by connection ID.
 // It is used:
 // * by the server to store sessions
@@ -149,8 +153,12 @@ func (h *packetHandlerMap) listen() {
 	}
 }
 
+var counter int = 0
+
 func (h *packetHandlerMap) handlePacket(addr net.Addr, data []byte) error {
 	rcvTime := time.Now()
+	counter++
+	//fmt.Println("RCVTIME:", counter)
 
 	r := bytes.NewReader(data)
 	iHdr, err := wire.ParseInvariantHeader(r, h.connIDLen)

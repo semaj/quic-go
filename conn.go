@@ -1,7 +1,6 @@
 package quic
 
 import (
-	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -34,7 +33,6 @@ func (c *conn) Write(p []byte) error {
 
 func (c *conn) Read(p []byte) (int, net.Addr, error) {
 	now := time.Now()
-	fmt.Println("TSLR: ", now.Sub(LastReceive))
 	LastReceive = now
 	return c.pconn.ReadFrom(p)
 }

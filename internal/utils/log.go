@@ -36,6 +36,10 @@ type Logger interface {
 	Debugf(format string, args ...interface{})
 }
 
+func CatLog(str string, args ...interface{}) {
+	//fmt.Println(str, args...)
+}
+
 // DefaultLogger is used by quic-go for logging.
 var DefaultLogger Logger
 

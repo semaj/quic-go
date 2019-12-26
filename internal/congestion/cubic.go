@@ -1,11 +1,10 @@
 package congestion
 
 import (
-	"math"
-	"time"
-
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
+	"math"
+	"time"
 )
 
 // This cubic implementation is based on the one found in Chromiums's QUIC
@@ -146,7 +145,6 @@ func (c *Cubic) CongestionWindowAfterAck(
 	delayMin time.Duration,
 	eventTime time.Time,
 ) protocol.ByteCount {
-	c.ackedBytesCount += ackedBytes
 
 	if c.epoch.IsZero() {
 		// First ACK after a loss event.

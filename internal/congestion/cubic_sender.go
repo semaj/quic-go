@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+func CatLog(args ...interface{}) {
+	//fmt.Println(args...)
+}
+
 const (
 	maxBurstBytes                                     = 3 * protocol.DefaultTCPMSS
 	renoBeta                       float32            = 0.7 // Reno backoff factor.
@@ -86,10 +90,20 @@ func (c *cubicSender) TimeUntilSend(bytesInFlight protocol.ByteCount) time.Durat
 	if c.InRecovery() {
 		// PRR is used when in recovery.
 		if c.prr.CanSend(c.GetCongestionWindow(), bytesInFlight, c.GetSlowStartThreshold()) {
+			CatLog("In recovery and prrCanSend")
 			return 0
 		}
 	}
-	return c.rttStats.SmoothedRTT() * time.Duration(protocol.DefaultTCPMSS) / time.Duration(2*c.GetCongestionWindow())
+	//fmt.Printf("QUICSMOOTHEDRTT: %fs\n", c.rttStats.SmoothedRTT().Seconds())
+	//rtt := 56 * time.Millisecond
+	rtt := c.rttStats.SmoothedRTT()
+	cwnd := c.GetCongestionWindow()
+	//cwnd = 450000
+	//CatLog("QUIC CONGESTION WINDOW:", cwnd)
+	t := rtt * time.Duration(protocol.DefaultTCPMSS) / time.Duration(2*cwnd)
+	//t := 50 * time.Millisecond * time.Duration(protocol.DefaultTCPMSS) / time.Duration(2*c.GetCongestionWindow())
+	//fmt.Printf("TIMEUNTILSEND: %fs\n", t.Seconds())
+	return t
 }
 
 func (c *cubicSender) OnPacketSent(
@@ -136,7 +150,14 @@ func (c *cubicSender) SlowstartThreshold() protocol.ByteCount {
 
 func (c *cubicSender) MaybeExitSlowStart() {
 	if c.InSlowStart() && c.hybridSlowStart.ShouldExitSlowStart(c.rttStats.LatestRTT(), c.rttStats.MinRTT(), c.GetCongestionWindow()/protocol.DefaultTCPMSS) {
+		//CatLog("Exiting slow start")
 		c.ExitSlowstart()
+	} else {
+		if c.InSlowStart() {
+			//CatLog("Staying in slow start")
+		} else {
+			//CatLog("Not in slow start")
+		}
 	}
 }
 
@@ -165,7 +186,6 @@ func (c *cubicSender) OnPacketLost(
 ) {
 	// TCP NewReno (RFC6582) says that once a loss occurs, any losses in packets
 	// already sent should be treated as a single loss event, since it's expected.
-	fmt.Println("QUIC LOSS")
 	if packetNumber <= c.largestSentAtLastCutback {
 		if c.lastCutbackExitedSlowstart {
 			c.stats.slowstartPacketsLost++
@@ -178,7 +198,6 @@ func (c *cubicSender) OnPacketLost(
 		}
 		return
 	}
-	fmt.Println("QUIC NEW LOSS")
 	c.lastCutbackExitedSlowstart = c.InSlowStart()
 	if c.InSlowStart() {
 		c.stats.slowstartPacketsLost++
@@ -225,6 +244,7 @@ func (c *cubicSender) maybeIncreaseCwnd(
 ) {
 	// Do not increase the congestion window unless the sender is close to using
 	// the current window.
+	fmt.Println("NOTCWNDLIMITED", priorInFlight, c.congestionWindow)
 	if !c.isCwndLimited(priorInFlight) {
 		c.cubic.OnApplicationLimited()
 		return
@@ -232,6 +252,7 @@ func (c *cubicSender) maybeIncreaseCwnd(
 	if c.congestionWindow >= c.maxCongestionWindow {
 		return
 	}
+
 	if c.InSlowStart() {
 		// TCP slow start, exponential growth, increase by one for each ACK.
 		c.congestionWindow += protocol.DefaultTCPMSS

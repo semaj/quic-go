@@ -3,8 +3,8 @@
 package main
 
 import (
-	"syscall/js"
+//"syscall/js"
 )
 
-var PayloadSizeMb = js.Global().Get("payloadSizeMb").Float()
-var NumPingPongs = js.Global().Get("numPingPongs").Int()
+//var PayloadSizeMb = js.Global().Get("payloadSizeMb").Float()
+//var NumPingPongs = js.Global().Get("numPingPongs").Int()
