@@ -1,7 +1,7 @@
 package congestion
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
 	"time"
@@ -244,7 +244,7 @@ func (c *cubicSender) maybeIncreaseCwnd(
 ) {
 	// Do not increase the congestion window unless the sender is close to using
 	// the current window.
-	fmt.Println("NOTCWNDLIMITED", priorInFlight, c.congestionWindow)
+	//fmt.Println("NOTCWNDLIMITED", priorInFlight, c.congestionWindow)
 	if !c.isCwndLimited(priorInFlight) {
 		c.cubic.OnApplicationLimited()
 		return

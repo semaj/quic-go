@@ -3,8 +3,9 @@
 package quic
 
 import (
+	b64 "encoding/base64"
 	"fmt"
-	"github.com/lucas-clemente/quic-go/internal/protocol"
+	//"github.com/lucas-clemente/quic-go/internal/protocol"
 	"net"
 	"syscall/js"
 	"time"
@@ -19,13 +20,17 @@ type CatalystConn struct {
 }
 
 func (c *CatalystConn) WriteTo(p []byte, _ net.Addr) (int, error) {
-	ui8 := make([]uint8, len(p))
-	for i, b := range p {
-		ui8[i] = b
-	}
-	jsArray := js.Global().Get("Uint8Array").New(len(ui8))
-	js.CopyBytesToJS(jsArray, ui8)
-	c.domUDPProxy.Call("send", jsArray)
+	//ui8 := make([]uint8, len(p))
+	//for i, b := range p {
+	//ui8[i] = b
+	//}
+	//jsArray := js.Global().Get("Uint8Array").New(len(ui8))
+	//js.CopyBytesToJS(jsArray, ui8)
+	//fmt.Println("ENCODE SIZE", len(p))
+	//fmt.Println("PACKET SEND START")
+	sEnc := b64.StdEncoding.EncodeToString(p)
+	//fmt.Println("PACKET SEND STOP")
+	c.domUDPProxy.Call("send", sEnc)
 	return 1, nil
 }
 
@@ -87,19 +92,25 @@ func newCatalystConn(addr net.Addr) *CatalystConn {
 	t := time.Now()
 	enqueue := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		//t0 := time.Now()
-		counter++
-		CatLog("RECEIVEDCOUNTER", counter)
-		int8arrayWrapper := js.Global().Get("Uint8Array").New(args[0].Get("data"))
-		data := *getPacketBuffer()
-		data = data[:protocol.MaxReceivePacketSize]
-		js.CopyBytesToGo(data, int8arrayWrapper)
-		byteLength := int8arrayWrapper.Get("byteLength").Int()
-		CatLog("ByteLength", byteLength)
-		data = data[:byteLength]
-		//conn.phm.handlePacket(conn.addr, data)
-		packetChan <- data
-		//fmt.Println("RECEIVE ELAPSED", time.Now().Sub(t))
-		t = time.Now()
+		go func() {
+			counter++
+			CatLog("RECEIVEDCOUNTER", counter)
+			data, err := b64.StdEncoding.DecodeString(args[0].String())
+			if err != nil {
+				panic(err)
+			}
+			//int8arrayWrapper := args[0] //js.Global().Get("Uint8Array").New(args[0].Get("data"))
+			//data := *getPacketBuffer()
+			//data = data[:protocol.MaxReceivePacketSize]
+			//js.CopyBytesToGo(data, int8arrayWrapper)
+			//byteLength := int8arrayWrapper.Get("byteLength").Int()
+			//CatLog("ByteLength", byteLength)
+			//data = data[:byteLength]
+			//conn.phm.handlePacket(conn.addr, data)
+			packetChan <- data
+			//fmt.Println("RECEIVE ELAPSED", time.Now().Sub(t))
+			t = time.Now()
+		}()
 
 		return nil
 	})

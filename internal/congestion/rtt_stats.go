@@ -64,6 +64,7 @@ func (r *RTTStats) UpdateRTT(sendDelta time.Duration, ackDelay time.Duration, no
 	if sendDelta == utils.InfDuration || sendDelta <= 0 {
 		return
 	}
+	//fmt.Printf("QUICSMOOTHEDRTT: %fs\n", sendDelta.Seconds())
 
 	// Update r.minRTT first. r.minRTT does not use an rttSample corrected for
 	// ackDelay but the raw observed sendDelta, since poor clock granularity at
