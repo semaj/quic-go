@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	//"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
+	//"time"
 
 	_ "net/http/pprof"
 
@@ -52,21 +52,25 @@ func randSeq(n int) string {
 }
 
 func init() {
+	payload := make([]byte, 20000000)
+	rand.Read(payload)
 	http.HandleFunc("/latency", func(w http.ResponseWriter, r *http.Request) {
 		_, err := io.Copy(ioutil.Discard, r.Body)
 		if err != nil {
 			panic(err)
 		}
 		w.Header().Set("Cache-Control", "no-cache")
-		fmt.Fprint(w, "ACK")
-		go func() {
-			Count--
-			log.Println("COUNT", Count)
-			if Count == 0 {
-				time.Sleep(1 * time.Second)
-				os.Exit(0)
-			}
-		}()
+		w.Write(payload)
+		//fmt.Fprint(w, "ACK")
+
+		//go func() {
+		//Count--
+		//log.Println("COUNT", Count)
+		//if Count == 0 {
+		//time.Sleep(1 * time.Second)
+		//os.Exit(0)
+		//}
+		//}()
 	})
 }
 

@@ -39,9 +39,10 @@ func main() {
 	//}
 	//}()
 	url := "https://jameslarisch.com/latency"
-	payloadSizeBytes := 20 * 1000000.0
+	//payloadSizeBytes := 20 * 1000000.0
 	for i := 0; i < 1; i++ {
-		payload := make([]byte, int64(payloadSizeBytes/float64(1)))
+		//payload := make([]byte, int64(payloadSizeBytes/float64(1)))
+		payload := make([]byte, 10)
 		rand.Read(payload)
 		buf := bytes.NewBuffer(payload)
 		fmt.Println("ABOUT TO POST")
@@ -51,19 +52,19 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		t1 := time.Now()
 		//js.Global().Get("window").Get("console").Call("profileEnd")
 		fmt.Println("JUST POSTED")
-		fmt.Print("LATENCY TIME ", i)
-		fmt.Print(": ", t1.Sub(t0).Seconds())
-		fmt.Println(" DONE")
-		select {}
 
 		body := &bytes.Buffer{}
 		_, err = io.Copy(body, rsp.Body)
 		if err != nil {
 			panic(err)
 		}
+		t1 := time.Now()
 		rsp.Body.Close()
+		fmt.Println("Size ", body.Len())
+		fmt.Print("LATENCY TIME ", i)
+		fmt.Print(": ", t1.Sub(t0).Seconds())
+		fmt.Println(" DONE")
 	}
 }

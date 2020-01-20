@@ -94,10 +94,10 @@ func (c *cubicSender) TimeUntilSend(bytesInFlight protocol.ByteCount) time.Durat
 			return 0
 		}
 	}
-	//fmt.Printf("QUICSMOOTHEDRTT: %fs\n", c.rttStats.SmoothedRTT().Seconds())
 	//rtt := 56 * time.Millisecond
 	rtt := c.rttStats.SmoothedRTT()
 	cwnd := c.GetCongestionWindow()
+	//fmt.Printf("QUICSMOOTHEDRTT: %fs\n", rtt.Seconds())
 	//cwnd = 450000
 	//CatLog("QUIC CONGESTION WINDOW:", cwnd)
 	t := rtt * time.Duration(protocol.DefaultTCPMSS) / time.Duration(2*cwnd)
