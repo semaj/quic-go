@@ -1,7 +1,6 @@
 package congestion
 
 import (
-	//"fmt"
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
 	"time"
@@ -97,7 +96,6 @@ func (c *cubicSender) TimeUntilSend(bytesInFlight protocol.ByteCount) time.Durat
 	//rtt := 56 * time.Millisecond
 	rtt := c.rttStats.SmoothedRTT()
 	cwnd := c.GetCongestionWindow()
-	//fmt.Printf("QUICSMOOTHEDRTT: %fs\n", rtt.Seconds())
 	//cwnd = 450000
 	//CatLog("QUIC CONGESTION WINDOW:", cwnd)
 	t := rtt * time.Duration(protocol.DefaultTCPMSS) / time.Duration(2*cwnd)

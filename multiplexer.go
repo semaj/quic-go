@@ -47,7 +47,7 @@ func getMultiplexer(params ...int) multiplexer {
 			connMuxer = &connMultiplexer{
 				conns:                   make(map[net.PacketConn]connManager),
 				logger:                  utils.DefaultLogger.WithPrefix("muxer"),
-				newPacketHandlerManager: newPacketHandlerMap,
+				newPacketHandlerManager: newPacketHandlerMap2,
 			}
 		}
 	})

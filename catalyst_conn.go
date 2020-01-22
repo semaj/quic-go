@@ -5,7 +5,7 @@ package quic
 import (
 	b64 "encoding/base64"
 	"fmt"
-	//"github.com/lucas-clemente/quic-go/internal/protocol"
+	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"net"
 	"syscall/js"
 	"time"
@@ -37,6 +37,7 @@ func (c *CatalystConn) WriteTo(p []byte, _ net.Addr) (int, error) {
 func (c *CatalystConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 	//time.Sleep(1 * time.Millisecond)
 	//s0 := time.Now()
+	panic("what")
 	recvd := <-c.packetChan
 	//fmt.Println("Elapsed ", time.Now().Sub(s0))
 	copied := copy(p, recvd)
@@ -72,8 +73,8 @@ func (c *CatalystConn) SetPHM(p *packetHandlerMap) {
 
 func newCatalystConn(addr net.Addr) *CatalystConn {
 	packetChan := make(chan []byte, 100000)
-	domUDP := js.Global().Get("document").Get("realUdp")
-	domUDPProxy := js.Global().Get("document").Get("realUdp")
+	domUDP := js.Global().Get("realUdp")
+	domUDPProxy := js.Global().Get("udp")
 
 	conn := &CatalystConn{
 		packetChan:  packetChan,
@@ -91,25 +92,27 @@ func newCatalystConn(addr net.Addr) *CatalystConn {
 	counter := 0
 	t := time.Now()
 	enqueue := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		//t0 := time.Now()
+		t0 := time.Now()
 		go func() {
 			counter++
 			//fmt.Println("RECEIVEDCOUNTER", counter)
-			data, err := b64.StdEncoding.DecodeString(args[0].String())
+			data2, err := b64.StdEncoding.DecodeString(args[0].String())
 			if err != nil {
 				panic(err)
 			}
 			//int8arrayWrapper := js.Global().Get("Uint8Array").New(args[0].Get("data"))
-			//data := *getPacketBuffer()
-			//data = data[:protocol.MaxReceivePacketSize]
+			data := *getPacketBuffer()
+			data = data[:protocol.MaxReceivePacketSize]
+			copy(data, data2)
 			//js.CopyBytesToGo(data, int8arrayWrapper)
 			//byteLength := int8arrayWrapper.Get("byteLength").Int()
 			//CatLog("ByteLength", byteLength)
-			//data = data[:byteLength]
-			//conn.phm.handlePacket(conn.addr, data)
-			packetChan <- data
+			data = data[:len(data2)]
+			conn.phm.handlePacket(conn.addr, data)
+			//packetChan <- data
 			//fmt.Println("RECEIVE ELAPSED", time.Now().Sub(t))
 			t = time.Now()
+			fmt.Printf("ENQUEUE: %fs\n", (time.Now().Sub(t0).Seconds()))
 		}()
 
 		return nil
@@ -122,7 +125,7 @@ func newCatalystConn(addr net.Addr) *CatalystConn {
 		return nil
 	})
 
-	domUDP.Set("onmessage", enqueue)
-	domUDPProxy.Set("onclose", onclose)
+	domUDPProxy.Set("onmessage", enqueue)
+	domUDP.Set("onclose", onclose)
 	return conn
 }
